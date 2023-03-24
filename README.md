@@ -50,7 +50,18 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 ```
 
+**Saving modifications**
+```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+
+git add -A
+git status
+git commit -m "My message"
+git push origin master
+```
+
 **Testing the pages**
-/djangoapp
-/djangoapp/about
-/djangoapp/contact
+* /djangoapp
+* /djangoapp/about
+* /djangoapp/contact
