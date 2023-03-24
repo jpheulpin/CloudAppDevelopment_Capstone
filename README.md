@@ -66,3 +66,4 @@ git push origin master
 * /djangoapp
 * /djangoapp/about
 * /djangoapp/contact
+* /admin
