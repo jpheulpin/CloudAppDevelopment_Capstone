@@ -34,3 +34,23 @@ You must complete all the labs to successfully complete the project.
 **Containerize your application**
 1. Add deployment artifacts to your application
 2. Deploy your application
+
+## Deploying the application
+
+**Getting the code**
+```
+git clone https://github.com/jpheulpin/CloudAppDevelopment_Capstone.git
+cd CloudAppDevelopment_Capstone/server
+```
+
+**Starting the application**
+```
+python3 -m pip install -U -r requirements.txt
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
+
+**Testing the pages**
+/djangoapp
+/djangoapp/about
+/djangoapp/contact
