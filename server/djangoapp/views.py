@@ -92,11 +92,11 @@ def get_dealerships(request):
 def get_dealer_details(request, dealer_id):
     if request.method == "GET":
         url = "https://eu-gb.functions.appdomain.cloud/api/v1/web/0384c197-cd86-4d69-b71d-8725c6b46bbf/dealership-package/get-review"
-        reviews = get_dealer_reviews_from_cf(url)
-        details['reviews'] = filter(lambda x: x.dealership == dealer_id, reviews)
-        details['dealer_id'] = dealer_id
-        details['dealer'] = get_dealer_detail_infos(dealer_id)
-        return HttpResponse(dealer_details)
+        reviews = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+        reviews_text = ""
+        for review in reviews:
+            reviews_text = reviews_text + review.review + ' [' + review.sentiment + ']'
+        return HttpResponse(reviews_text)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):

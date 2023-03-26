@@ -1,8 +1,11 @@
 import requests
 import json
 # import related models here
-from .models import CarDealer
+from .models import CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
+from ibm_watson import NaturalLanguageUnderstandingV1
+from ibm_watson.natural_language_understanding_v1 import Features, SentimentOptions
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
 # Create a `get_request` to make HTTP GET requests
 def get_request(url, **kwargs):
@@ -47,33 +50,42 @@ def get_dealers_from_cf(url, **kwargs):
     return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-def get_dealer_reviews_from_cf(url, **kwargs):
+def get_dealer_reviews_from_cf(url, dealerId):
     results = []
-    json_result = get_request(url)
+    json_result = get_request(url, id=dealerId)
+    print(json_result)
     if json_result:
-        print(json_result)
-        data = json_result.get("data")
-        docs = data.get("docs")
-        print(docs)
-        for review_doc in docs:
+        for review in json_result:
+            analyze_review_sentiments(review["review"])
             review_obj = DealerReview(
-                dealership=review_doc.get("dealership"),
-                name=review_doc.get("name"),
-                purchase=review_doc.get("purchase"),
-                review=review_doc.get("review"),
-                purchase_date=review_doc.get("purchase_date"),
-                car_make=review_doc.get("car_make"),
-                car_model=review_doc.get("car_model"),
-                car_year=review_doc.get("car_year"),
-                sentiment=analyze_review_sentiments(review_doc.get("review")),
-                id=review_doc.get("id")
+                dealership=review["dealership"],
+                name=review["name"],
+                purchase=review["purchase"],
+                review=review["review"],
+                purchase_date=review["purchase_date"],
+                car_make=review["car_make"],
+                car_model=review["car_model"],
+                car_year=review["car_year"],
+                sentiment=analyze_review_sentiments(review["review"]),
+                id=review["id"]
             )
             results.append(review_obj)
+    return results
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
-# def analyze_review_sentiments(text):
-# - Call get_request() with specified arguments
-# - Get the returned sentiment label such as Positive or Negative
+def analyze_review_sentiments(dealerreview):
+    API_KEY = "5JmS_uW5UnAKvlwA6SNwlXBdiCLeoW5UC1fktwskPGHq"
+    NLU_URL = "https://api.eu-de.natural-language-understanding.watson.cloud.ibm.com/instances/b39ebce8-c49d-4d7f-9e58-ef57e0af6039"
+    
+    authenticator = IAMAuthenticator(API_KEY)
+    natural_language_understanding = NaturalLanguageUnderstandingV1(
+        version='2022-04-07',
+        authenticator=authenticator
+    )
+    natural_language_understanding.set_service_url(NLU_URL)
+    response = natural_language_understanding.analyze(
+        text=dealerreview,
+        features=Features(sentiment=SentimentOptions(targets=[dealerreview]))).get_result()
 
-
-
+    json.dumps(response, indent=2)
+    return response['sentiment']['document']['label']
