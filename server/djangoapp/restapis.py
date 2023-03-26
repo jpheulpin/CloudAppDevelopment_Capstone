@@ -52,6 +52,24 @@ def get_dealers_from_cf(url, **kwargs):
             results.append(dealer_obj)
     return results
 
+def get_dealer_from_cf_by_id(url, dealer_id):
+    json_result = get_request(url, id=dealer_id)
+    if json_result:
+        print("******************")
+        print(json_result)
+        dealer = json_result[0]
+        dealer_obj = CarDealer(
+            address=dealer["address"],
+            city=dealer["city"],
+            full_name=dealer["full_name"],
+            id=dealer["id"],
+            lat=dealer["lat"],
+            long=dealer["long"],
+            short_name=dealer["short_name"],
+            st=dealer["st"],
+            zip=dealer["zip"])
+        return dealer_obj
+
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
 def get_dealer_reviews_from_cf(url, dealerId):
     results = []
@@ -86,9 +104,12 @@ def analyze_review_sentiments(dealerreview):
         authenticator=authenticator
     )
     natural_language_understanding.set_service_url(NLU_URL)
-    response = natural_language_understanding.analyze(
-        text=dealerreview,
-        features=Features(sentiment=SentimentOptions(targets=[dealerreview]))).get_result()
+    try:
+        response = natural_language_understanding.analyze(
+            text=dealerreview,
+            features=Features(sentiment=SentimentOptions(targets=[dealerreview]))).get_result()
+        json.dumps(response, indent=2)
+        return response['sentiment']['document']['label']
+    except:
+        return "neutral"
 
-    json.dumps(response, indent=2)
-    return response['sentiment']['document']['label']
